@@ -8,4 +8,6 @@
   * P:95.42 R:77.89 F:85.77 A:94.89 | tp: 28763, tn: 148592, fp: 1380, fn: 8167 
   * P:92.98 R:85.95 F:89.32 A:95.78 | tp: 31869, tn: 140994, fp: 2407, fn: 5211 
   * P:97.98 R:93.05 F:95.45 A:98.12 | tp: 31532, tn: 125678, fp: 651, fn: 2355 
-
+  
+## Model Architecture and input example
+![Current Model](https://github.com/adich23/Object-Reidentification/blob/master/two-stream-model.png)
