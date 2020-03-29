@@ -1,3 +1,6 @@
+## Run command
+python siamese_two_stream.py train
+
 ## Test resuls on [Vehicle Reid dataset](https://arxiv.org/abs/1911.05541)
 * **Combined Results** - 
   * **Precision:94.342  | Recall:88.326 | F-score:90.99**
