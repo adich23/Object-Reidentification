@@ -22,7 +22,8 @@ def siamese_model(input1, input2):
   right_input_P = Input(input1)
   left_input_C = Input(input2)
   right_input_C = Input(input2)
-  convnet_plate = small_vgg_plate(input1)
+  # Select which CNN to choose for Surrounding stream
+  convnet_plate = small_vgg_car(input1)# small_vgg_plate(input1)
   encoded_l_P = convnet_plate(left_input_P)
   encoded_r_P = convnet_plate(right_input_P)
   convnet_car = small_vgg_car(input2)
@@ -52,7 +53,11 @@ def siamese_model(input1, input2):
   return model
 #------------------------------------------------------------------------------
 if __name__ == '__main__':
-  data = json.load(open('%s/dataset_1.json' % (path)))
+  # Trained models will be saved as - Set-0 model_two_stream_surr_0_car-vgg-96.h5, Set-1 model_two_stream_surrall_1_car-vgg-96.h5, ....
+  # Validation output files saved as - For Set-0 - validation_two_stream_surr_0_car-vgg-96_inferences_output.txt
+  suffix = "_surr"
+  model_name = "car-vgg-96"
+  data = json.load(open('%s/dataset%s.json' % (path,suffix)))
 
   keys = ['Set01','Set02','Set03','Set04','Set05']
 
@@ -82,7 +87,7 @@ if __name__ == '__main__':
       tstGen = generator(val, batch_size, ex2, input1, input2)
       siamese_net = siamese_model(input1, input2)
 
-      f1 = 'model_two_stream_%d.h5' % (k)
+      f1 = 'model_two_stream%s_%d.h5' % (suffix,k)
 
       #fit model
       history = siamese_net.fit_generator(trnGen,
@@ -93,7 +98,7 @@ if __name__ == '__main__':
 
       #validate plate model
       tstGen2 = generator(val, batch_size, ex2, input1, input2, with_paths = True)
-      test_report('validation_two_stream_%d' % (k),siamese_net, val_steps_per_epoch, tstGen2)
+      test_report('validation_two_stream%s_%d_%s' % (suffix,k,model_name),siamese_net, val_steps_per_epoch, tstGen2)
 
       siamese_net.save(f1)
 
@@ -108,9 +113,9 @@ if __name__ == '__main__':
       ex3 = ProcessPoolExecutor(max_workers = 12)
       tst_steps_per_epoch = ceil(len(tst) / batch_size)
       tstGen2 = generator(tst, batch_size, ex3, input1, input2, with_paths = True)
-      f1 = os.path.join(folder,'model_two_stream_%d.h5' % (k))
+      f1 = os.path.join(folder,'model_two_stream%s_%d_%s.h5' % (suffix,k,model_name))
       siamese_net = load_model(f1)
-      test_report('test_two_stream_%d' % (k),siamese_net, tst_steps_per_epoch, tstGen2)
+      test_report('test_two_stream_%s_%d_%s' % (suffix,k,model_name),siamese_net, tst_steps_per_epoch, tstGen2)
   elif type1 == 'predict':
 
     results = []
