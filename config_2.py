@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="1,0"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"#"1,0"
 import tensorflow as tf
 from keras import backend as K
 from keras.optimizers import Adam
@@ -20,6 +20,8 @@ NUM_EPOCHS = 10
 nchannels=3 #number of channels
 image_size_w_p = 96 #image´s width for registration plate
 image_size_h_p = 48 #image´s height for registration plate
+# image_size_w_p = 64 #image´s width for surroundings
+# image_size_h_p = 64 #image´s height for surroundings
 image_size_w_c = 64 #image´s width for vehicle´s shape
 image_size_h_c = 64 #image´s height for vehicle´s shape
 
