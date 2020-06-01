@@ -131,6 +131,8 @@ def calculate_metrics(ytrue1, ypred1):
     return maxres
 
 #------------------------------------------------------------------------------
+webhook_url = 'https://hooks.slack.com/services/xxxxxxxx/xxxxxxxxxx/xxxxxxxxxx'
+# @slack_sender(webhook_url=webhook_url, channel="results")
 def test_report(model_name, model, num_test_steps, test_gen):
     print("=== Evaluating model: {:s} ===".format(model_name))
     a = open("%s_inferences_output.txt" % (model_name), "w")
@@ -143,9 +145,12 @@ def test_report(model_name, model, num_test_steps, test_gen):
           ypred.append(y1_class)
           ytrue.append(y2)
           a.write("%s;%s;%d;%d;%f;%s\n" % (p0, p1, y2, y1_class, yreg[0], str(y1)))
-
-    a.write('tp: %d, tn: %d, fp: %d, fn: %d P:%0.2f R:%0.2f F:%0.2f A:%0.2f' % calculate_metrics(ytrue, ypred))
+    res = calculate_metrics(ytrue, ypred)
+    a.write('tp: %d, tn: %d, fp: %d, fn: %d P:%0.2f R:%0.2f F:%0.2f A:%0.2f' % res)
+    st = 'tp: %d, tn: %d, fp: %d, fn: %d P:%0.2f R:%0.2f F:%0.2f A:%0.2f' % res
+#     a.write('tp: %d, tn: %d, fp: %d, fn: %d P:%0.2f R:%0.2f F:%0.2f A:%0.2f' % calculate_metrics(ytrue, ypred))
     a.close()
+#     return (model_name,'  ',st)
 #------------------------------------------------------------------------------
 def process_load(f1, vec_size):
     _i1 = image.load_img(f1, target_size=vec_size)
