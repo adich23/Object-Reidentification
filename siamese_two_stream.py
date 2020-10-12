@@ -15,6 +15,7 @@ from sys import argv
 from custom_layers import *
 from collections import Counter
 import os
+import argparse
 
 #------------------------------------------------------------------------------
 def siamese_model(input1, input2):
@@ -55,15 +56,53 @@ def siamese_model(input1, input2):
 if __name__ == '__main__':
   # Trained models will be saved as - Set-0 model_two_stream_surr_0_car-vgg-96.h5, Set-1 model_two_stream_surrall_1_car-vgg-96.h5, ....
   # Validation output files saved as - For Set-0 - validation_two_stream_surr_0_car-vgg-96_inferences_output.txt
-  suffix = "_surr"
-  model_name = "car-vgg-96"
-  data = json.load(open('%s/dataset%s.json' % (path,suffix)))
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--car_size", help="Select Car image size from 64, 96, 128, 192",choices=[64,96,128,192],type=int, required=True)
+  parser.add_argument("--surr_size", help="Select Car image size from 64, 96, 128, 192",choices=[64,96,128,192],type=int, required=True)
+  parser.add_argument("--dataset", help="Data type - 3-sided or 4-sided ",type=str, default="_surr_10000")
+  parser.add_argument("--suffix", help="Suffix for model name ",type=str, default="")
+  parser.add_argument("--train", help="Train",action='store_true', default=False)
+  parser.add_argument("--test", help="Train",action='store_true', default=False)
+  parser.add_argument("--predict", help="Train",action='store_true', default=False)
+  parser.add_argument("--model_folder", help="Saved Model Folder for Predict and Test",type=str)
+  parser.add_argument("--json_path", help="JSON for Predict",type=str)
+  args = parser.parse_args()
+  
+
+  if args.train:
+    type1 = 'train'
+  elif args.predict:
+    type1 = 'predict'
+  elif args.test:
+    type1 = 'test'
+  else:
+    print("Either of Train or Predict or Test argument is required.")
+    exit(1)
+  
+
+  PARAMS = {
+      'car_size':args.car_size,
+      'surr_size':args.surr_size,
+      'dataset':args.dataset,
+      'suffix':args.suffix,
+      'dataset':args.dataset,
+      'model':"-"+str(args.car_size)+"-"+str(args.surr_size)
+  }
+  
+  if PARAMS['suffix'] == "":
+    PARAMS['suffix'] = PARAMS['model']
+  
+#   suffix = "_surr_10000"
+#   model_name = "-96"
+  
+
+  data = json.load(open('%s/dataset%s.json' % (path,PARAMS['dataset'])))
+#   data = json.load(open('%s/dataset_surr_500.json' % (path)))
 
   keys = ['Set01','Set02','Set03','Set04','Set05']
 
   input1 = (image_size_h_p,image_size_w_p,nchannels)
   input2 = (image_size_h_c,image_size_w_c,nchannels)
-  type1 = argv[1]
 
   if type1=='train':
 
