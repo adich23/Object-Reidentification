@@ -30,6 +30,8 @@ from keras.optimizers import Adam
 DIM_ORDERING = 'tf'
 CONCAT_AXIS = -1
 
+size_factor = {64:1, 96:1.5, 128:1.5, 192:2}
+
 def vgg_original (input_shape):
     input1 = Input(input_shape)
 
@@ -75,6 +77,31 @@ def small_vgg_car(input_shape):
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
 
     x = Conv2D(512, (3, 3), activation='relu', padding='same',name='block5_conv1')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
+
+    x = Flatten()(x)
+
+    return Model(input1,x)
+
+def vgg_custom(input_shape):
+    factor = size_factor[input_shape[0]]
+    print("\nFactor\n",factor)
+    input1 = Input(input_shape)
+    x = Conv2D(int(64*factor), (3, 3), activation='relu', padding='same',name='block1_conv1')(input1)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
+
+    x = Conv2D(int(128*factor), (3, 3), activation='relu', padding='same',name='block2_conv1')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
+
+    # Block 2
+    x = Conv2D(int(128*factor), (3, 3), activation='relu', padding='same',name='block3_conv1')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
+
+    # Block 3
+    x = Conv2D(int(256*factor), (3, 3), activation='relu', padding='same',name='block4_conv1')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
+
+    x = Conv2D(int(512*factor), (3, 3), activation='relu', padding='same',name='block5_conv1')(x)
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
 
     x = Flatten()(x)
