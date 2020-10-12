@@ -101,11 +101,10 @@ if __name__ == '__main__':
 
   keys = ['Set01','Set02','Set03','Set04','Set05']
 
-  input1 = (image_size_h_p,image_size_w_p,nchannels)
-  input2 = (image_size_h_c,image_size_w_c,nchannels)
+  input1 = (PARAMS['surr_size'],PARAMS['surr_size'],nchannels)
+  input2 = (PARAMS['car_size'],PARAMS['car_size'],nchannels)
 
   if type1=='train':
-
     for k in range(len(keys)):
       K.clear_session()
       val = data[keys[(k+2)%5]]
@@ -114,35 +113,34 @@ if __name__ == '__main__':
 #       aux.pop((k+2)%5)
       trn = data[aux[k]] + data[aux[(k+1)%5]]
       print ("Train : ",aux[k]," ",aux[(k+1)%5],"\tTest: ",aux[(k+3)%5],aux[(k+4)%5])
-      print ()
-#       print ("Train : ",aux[0]," ",aux[1])
       train_steps_per_epoch = ceil(len(trn) / batch_size)
       val_steps_per_epoch = ceil(len(val) / batch_size)
 
-      ex1 = ProcessPoolExecutor(max_workers = 10)
-      ex2 = ProcessPoolExecutor(max_workers = 10)
+      ex1 = ProcessPoolExecutor(max_workers = 8)
+      ex2 = ProcessPoolExecutor(max_workers = 8)
 
       trnGen = generator(trn, batch_size, ex1, input1, input2,  augmentation=True)
       tstGen = generator(val, batch_size, ex2, input1, input2)
       siamese_net = siamese_model(input1, input2)
-
-      f1 = 'model_two_stream%s_%d.h5' % (suffix,k)
-
+      f1 = 'model_two_stream%s%s_%d.h5' % (PARAMS['model'],PARAMS['dataset'],k)
       #fit model
       history = siamese_net.fit_generator(trnGen,
                                     steps_per_epoch=train_steps_per_epoch,
                                     epochs=NUM_EPOCHS,
                                     validation_data=tstGen,
-                                    validation_steps=val_steps_per_epoch)
+                                    validation_steps=val_steps_per_epoch)#,callbacks=[neptune_logger])
 
       #validate plate model
       tstGen2 = generator(val, batch_size, ex2, input1, input2, with_paths = True)
-      test_report('validation_two_stream%s_%d_%s' % (suffix,k,model_name),siamese_net, val_steps_per_epoch, tstGen2)
+      test_report('validation_two_stream%s%s_%d' % (PARAMS['model'],PARAMS['dataset'],k),siamese_net, val_steps_per_epoch, tstGen2)
 
       siamese_net.save(f1)
 
   elif type1 == 'test':
-    folder = argv[2]
+#     folder = argv[2]
+    if not args.model_folder:
+        print("--model_folder argument is required for Predict or Test")
+    folder = args.model_folder
     for k in range(len(keys)):
       K.clear_session()
       aux = keys[:]
@@ -152,9 +150,9 @@ if __name__ == '__main__':
       ex3 = ProcessPoolExecutor(max_workers = 12)
       tst_steps_per_epoch = ceil(len(tst) / batch_size)
       tstGen2 = generator(tst, batch_size, ex3, input1, input2, with_paths = True)
-      f1 = os.path.join(folder,'model_two_stream%s_%d_%s.h5' % (suffix,k,model_name))
+      f1 = os.path.join(folder,'model_two_stream_%d.h5' % (k))
       siamese_net = load_model(f1)
-      test_report('test_two_stream_%s_%d_%s' % (suffix,k,model_name),siamese_net, tst_steps_per_epoch, tstGen2)
+      test_report('test_two_stream%s_%d' % (PARAMS['suffix'],k),siamese_net, tst_steps_per_epoch, tstGen2)
   elif type1 == 'predict':
 
     results = []
@@ -167,13 +165,17 @@ if __name__ == '__main__':
 
     X = [img1, img2, img3, img4]
 
-    folder = argv[3]
+#     folder = argv[3]
+    if not args.model_folder:
+        print("--model_folder argument is required for Predict or Test")
+    folder = args.model_folder
+    
     for k in range(len(keys)):
       K.clear_session()
-      f1 = os.path.join(folder,'model_two_stream_%d.h5' % (k))
+      f1 = os.path.join(folder,'model_two_stream%s_%d.h5' % (PARAMS['suffix'],k))
       model = load_model(f1)
       Y_ = model.predict(X)
       results.append(np.argmax(Y_[0]))
       print("model %d: %s" % (k+1,"positive" if results[k]==POS else "negative"))
     print("final result: %s" % ("positive" if Counter(results).most_common(1)[0][0]==POS else "negative"))
-
+    
