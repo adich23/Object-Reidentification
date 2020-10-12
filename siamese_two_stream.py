@@ -24,10 +24,10 @@ def siamese_model(input1, input2):
   left_input_C = Input(input2)
   right_input_C = Input(input2)
   # Select which CNN to choose for Surrounding stream
-  convnet_plate = small_vgg_car(input1)# small_vgg_plate(input1)
+  convnet_plate = vgg_custom(input1)# small_vgg_plate(input1)
   encoded_l_P = convnet_plate(left_input_P)
   encoded_r_P = convnet_plate(right_input_P)
-  convnet_car = small_vgg_car(input2)
+  convnet_car =  vgg_custom(input2)
   encoded_l_C = convnet_car(left_input_C)
   encoded_r_C = convnet_car(right_input_C)
   inputs = [left_input_P, right_input_P, left_input_C, right_input_C]
